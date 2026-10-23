@@ -63,3 +63,7 @@ scripts/ensure_browser.sh   浏览器启动、状态、停止
 
 - `SCHOLAR_CDP_PORT`：CDP 端口，默认 9222
 - `OPENBROWSER_BIN`：浏览器可执行文件路径，默认 `/opt/openbrowser/openbrowser`
+
+## License
+
+MIT，详见 [LICENSE](LICENSE)。
