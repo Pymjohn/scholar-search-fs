@@ -12,7 +12,7 @@
 - 可用的 X 显示（WSL 下默认 `DISPLAY=:0`，由 WSLg 提供）
 - Node.js 18 以上（使用内置 `fetch` 与 `WebSocket`，实测 Node 24）
 
-浏览器是带窗口进程，运行时会弹出窗口；这是该构建剔除了无头模式的直接后果。
+默认以无窗口方式运行（`--ozone-platform=headless`），不会弹出界面。该构建剔除了 `--headless` 参数，但保留了这个后端；需要肉眼观察页面时设 `SCHOLAR_HEADLESS=0` 切换为窗口模式。
 
 ## 使用
 
@@ -63,6 +63,7 @@ scripts/ensure_browser.sh   浏览器启动、状态、停止
 
 - `SCHOLAR_CDP_PORT`：CDP 端口，默认 9222
 - `OPENBROWSER_BIN`：浏览器可执行文件路径，默认 `/opt/openbrowser/openbrowser`
+- `SCHOLAR_HEADLESS`：默认 `1` 无窗口运行；设 `0` 则弹出窗口，便于手动处理人机验证
 
 ## License
 

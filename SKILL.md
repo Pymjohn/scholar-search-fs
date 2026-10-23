@@ -20,7 +20,7 @@ description: 用本机已安装的 openbrowser（Chromium 企业版）检索 Goo
 ## 前置条件
 
 1. `openbrowser` 已安装，可执行文件在 `/opt/openbrowser/openbrowser`（包名 `openbrowser-cn-stable`）。若不存在，先让用户提供该 deb 并安装；不要用其他浏览器替代。
-2. 有可用的 X 显示。WSL 下默认 `DISPLAY=:0`（WSLg）。浏览器是带窗口的进程，会弹出窗口，这是正常现象。
+2. 无需图形界面。默认以 `--ozone-platform=headless` 启动，窗口不会出现；需要肉眼观察页面或手动过人机验证时，设 `SCHOLAR_HEADLESS=0` 改用窗口模式（WSL 下自动使用 `DISPLAY=:0`）。
 3. 端口 `9222` 未被占用；可用 `SCHOLAR_CDP_PORT` 改端口。
 
 ## 快速开始
@@ -54,6 +54,16 @@ bash scripts/ensure_browser.sh start    # 启动
 bash scripts/ensure_browser.sh status   # 查看
 bash scripts/ensure_browser.sh stop     # 停止
 ```
+
+## 无窗口运行
+
+该构建在编译期剔除了 `--headless`，直接传该参数不会有任何输出。但 Chromium 的臭氧平台仍保留 headless 后端，因此启动脚本改用：
+
+```bash
+/opt/openbrowser/openbrowser --ozone-platform=headless --remote-debugging-port=9222 ...
+```
+
+实测该模式下检索结果与窗口模式一致，页面渲染、脚本执行、CDP 控制均正常，进程环境里不含 `DISPLAY`。代价是页面版式略有差异，部分页面不再显示"找到约 X 条结果"的统计行，条目本身不受影响。
 
 ## 参数
 
@@ -97,7 +107,7 @@ pdf       PDF 直链（若无则为空）
 | `无法连接 CDP（端口 9222）` | 浏览器未安装或未启动。检查 `/opt/openbrowser/openbrowser` 是否存在，或手动执行 `bash scripts/ensure_browser.sh start` 看日志 `~/.local/share/openbrowser-auto/launch.log` |
 | `被 Google 判定为异常流量` | 出现人机验证。降低频率、间隔 3 秒以上重试；或在弹出的浏览器窗口里手动完成一次验证后再跑 |
 | 结果为空但页面正常 | 关键词太窄或语言不匹配。换同义词、放宽年份、去掉过长的词组 |
-| 浏览器窗口干扰操作 | 这是无头模式不可用的结果（该构建剔除了 headless）。若必须静默运行，可安装 Xvfb 并用它提供虚拟显示，但需用户确认后再改 |
+| 需要看到页面才能过人机验证 | 默认无窗口。执行 `bash scripts/ensure_browser.sh stop`，再用 `SCHOLAR_HEADLESS=0 bash scripts/ensure_browser.sh start` 启动窗口模式，手动通过验证后切回默认模式 |
 | 端口被占用 | 用 `SCHOLAR_CDP_PORT=9333` 换端口，脚本与启动器都读这个环境变量 |
 
 ## 边界与注意事项

@@ -118,7 +118,7 @@ const EXTRACT = `(() => {
     url: location.href,
     title: document.title,
     summary: (document.querySelector(".gs_ab_md") || {}).innerText || "",
-    bodyHead: body.slice(0, 500),
+    bodyText: body,
     rows,
   });
 })()`;
@@ -143,8 +143,8 @@ function parseRow(raw) {
   };
 }
 
-function isChallenged(title, bodyHead) {
-  return /unusual traffic|机器人|验证码|Just a moment|not a robot/i.test(`${title}\n${bodyHead}`);
+function isChallenged(title, bodyText) {
+  return /unusual traffic|机器人|验证码|Just a moment|not a robot/i.test(`${title}\n${bodyText}`);
 }
 
 (async () => {
@@ -170,13 +170,13 @@ function isChallenged(title, bodyHead) {
     const raw = r?.result?.value;
     if (!raw) continue;
     const parsed = JSON.parse(raw);
-    if (isChallenged(parsed.title, parsed.bodyHead)) { payload = parsed; break; }
+    if (isChallenged(parsed.title, parsed.bodyText)) { payload = parsed; break; }
     if (parsed.rows?.length) { payload = parsed; break; }
   }
   ws.close();
   await closeTarget(target.id);
 
-  if (payload && isChallenged(payload.title, payload.bodyHead)) {
+  if (payload && isChallenged(payload.title, payload.bodyText)) {
     console.error("被 Google 判定为异常流量（出现人机验证）。降低频率后重试，或在浏览器窗口中手动完成一次验证。");
     process.exit(3);
   }
@@ -188,8 +188,8 @@ function isChallenged(title, bodyHead) {
   const rows = payload.rows.map(parseRow);
   const summary =
     payload.summary.trim() ||
-    (payload.bodyHead.match(/找到约[^\n]{0,40}/) || [])[0] ||
-    (payload.bodyHead.match(/About [\d,]+ results/) || [])[0] ||
+    (payload.bodyText.match(/找到约[^\n]{0,40}/) || [])[0] ||
+    (payload.bodyText.match(/About [\d,]+ results/) || [])[0] ||
     `${rows.length} 条`;
 
   if (opts.json) {
